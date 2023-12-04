@@ -77,8 +77,9 @@
 
 **权限要求2级（销售人员）：**
 - Order -> Stock：`STOCK <ISBN> <数量> <进货价格>`
-- Bookinfo -> Addition：`ADD_BOOK <ISBN> <书名> <作者> <关键字> <库存量> <单价>`
-- Bookinfo -> Modification：`MODIFY_BOOK <ISBN> <需要修改的字段> <新值>`
+- Bookinfo -> Add：`ADD_BOOK <ISBN> <书名> <作者> <关键字> <库存量> <单价>`
+- Bookinfo -> Modify：`MODIFY_BOOK <ISBN> <需要修改的字段> <新值>`
+- Bookinfo -> Delete：`DELETE_BOOK <ISBN>`
 - Document -> Record：`CREATE_RECORD <备注>`
 - Account -> Login：`LOGIN <用户名>`
 
@@ -92,11 +93,32 @@
 ### 3.类、结构体设计
 
 #### 3.1 数据存储方式
-采用二进制存储，
+采用二进制存储，调`Fileio.h`中的接口实现文件的输入输出。
 
 #### 3.2 类
-- Book类
-  - 用`Bookinfo.txt`保存数据，
+- Bookinfo类
+  - 在`./database/Bookinfo.txt`内保存数据（块状链表）
+```cpp
+//Bookinfo.h
+    
+    //新增图书并录入信息
+    void Bookinfo_Add();
+    
+    //修改图书信息 
+    void Booinfo_Modify();
+    
+    //删除图书信息
+    void Bookinfo_Delete();
+    
+    //查询（根据ISBN）
+    string Book_Info();
+    
+    //查询
+    string Book_Query();
+```
 - User类：存储用户的属性，如用户名、密码等。
+  - 维护一个`user_stack`，存储用户栈。初始化有一个`Guest`账户（对`logout`无效）
+  - `login`操作时，如果本账户权限更高或已经在登录栈中，可以不输入密码。（如果登录栈内非顶层的账户，把该账户`move`至栈顶避免重复）
+  - `logout`操作时，弹出栈顶的用户
 - Order类：存储订单信息，包括订单内容和相应的用户。
 - PurchaseInfo类：存储采购信息，包括ISBN号、数量和单价等。

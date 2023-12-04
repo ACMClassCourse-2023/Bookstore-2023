@@ -17,8 +17,9 @@
 ##### 1.1.3 销售人员功能（Advanced User, User access=2, Advanced Functionality）
 销售人员可以执行顾客的所有操作，并具有额外的功能。
 - Order -> Stock：进货操作，需指定ISBN号、数量和进货价格
-- Bookinfo -> Addition：信息录入
-- Bookinfo -> Modification：信息修改
+- Bookinfo -> Add：信息录入
+- Bookinfo -> Modify：信息修改
+- Bookinfo -> Delete：信息删除
 - Account -> Register
 - Document -> Record：记录工作内容（以生成员工工作报告）
 - Account -> Login：登入客户账户并**创建用户操作（订单）**
