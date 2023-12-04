@@ -67,7 +67,7 @@
 
 **权限要求0级（游客）：**
 -  Account -> Register：`REGISTER <用户名> <密码>` ，以及如果用户名可用，则 `<重复密码>`
-- Account -> Login：`LOGIN <用户名> <密码>`
+- Account -> Login：`LOGIN <用户名> (<密码>)`
 - Account -> Logout：`LOGOUT`
 
 **权限要求1级（顾客）：**
@@ -117,8 +117,24 @@
     string Book_Query();
 ```
 - User类：存储用户的属性，如用户名、密码等。
+  - 在`./database/users.txt`内保存数据（块状链表）。其中每个用户存储`用户名 - 用户等级 - 用户密码的加密值`。
   - 维护一个`user_stack`，存储用户栈。初始化有一个`Guest`账户（对`logout`无效）
   - `login`操作时，如果本账户权限更高或已经在登录栈中，可以不输入密码。（如果登录栈内非顶层的账户，把该账户`move`至栈顶避免重复）
   - `logout`操作时，弹出栈顶的用户
-- Order类：存储订单信息，包括订单内容和相应的用户。
-- PurchaseInfo类：存储采购信息，包括ISBN号、数量和单价等。
+  - 用户名禁止修改
+```cpp
+//User.h
+    //登入，返回栈中登录后账户指针
+    <指针> Login();
+    
+    //登出，返回栈中登出后账户指针
+    <指针> Logout();
+    
+    //注册（默认可以注册顾客，如果传入user_access=2要求则店长操作）
+    void Register(std::string user_name, std::string password, int user_access = 1);
+    
+    //修改密码？（如果有需求）
+    void Account_Modify();
+```
+- Order类：存储订单信息，包括订单内容和相应的用户。 
+- Documents类：生成并查看文档和日志
