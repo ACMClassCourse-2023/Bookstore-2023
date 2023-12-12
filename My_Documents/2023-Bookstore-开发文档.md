@@ -46,7 +46,7 @@
 
 #### 图书系统指令
 此部分调用`Bookinfo.h`和`Stock.h`
-- `show`：检索图书，如果关键字为`ISBN`则直接调用`Bookinfo.h`的`seek`，否则遍历图书列表，把所有符合条件的图书加入`vector`返回后输出。（*可考虑实现*：额外创建一个文件，用于存储各关键字所对应的图书，一样采用块状链表维护）
+- `show`：检索图书，如果关键字为`ISBN`则直接调用`Bookinfo.h`的`seek`，否则在`./Database/Search/xxx.txt`中查询关键词，把所有符合条件的图书加入`vector`返回后输出。（*可考虑实现*：额外创建一个文件，用于存储各关键字所对应的图书，一样采用块状链表维护）
 - `select`：检查`ISBN`对应书是否存在，存在则把登陆栈中对应该用户的`.second`修改，不存在则创建。
 - `modify`：检验操作是否合法，随后调用Bookinfo的修改函数。
 - `buy`：检验操作是否合法，随后更新`./Database/Order.txt`和`./Database/Stock.txt`。
@@ -68,6 +68,7 @@ Bookstore程序的代码文件结构如下：
 - `Stack.h` 和 `Stack.cpp`
 - `Documents.h` 和 `Documents.cpp`
 ## 类及成员说明
+### 功能说明
 #### Fileio类
 - 块状链表：实例化类模板，将`index`和`value`分开存储，支持根据`index`实现查找、新增、修改、删除。
 - 普通文件：根据具体操作实现对应函数
@@ -76,21 +77,31 @@ Bookstore程序的代码文件结构如下：
 - `value`：`[ISBN]-[BookName]-[Auther]-[Keyword]`，后面三个值统一长度后存储。
 #### User类成员变量
 - `index`: `username`
-- `value`：`[username]-[权限]-[密码加密值]`，密码加密值统一为20位字符串。
+- `value`：`[username]-[权限]-[密码加密值]`，密码加密值统一为`20`位字符串。
 #### Stock类
 该类管理`Order.txt`（采购和销售数据）以及`Stock.txt`（库存数据）。
 #### Documents类
 该类负责生成和保存文档。
+
+### 接口说明
+* 待完善
+
 ## 文件存储说明
-所有文件操作都调用`Fileio.h`，其中**用户**和**书籍**因为修改操作较多，采用块状链表。而其他文件采用**顺序存储**。
+所有文件操作都调用`Fileio.h`，其中**用户**和**书籍**（包括书籍对应的关键词索引）因为修改操作较多，采用块状链表。而其他文件采用**顺序存储**。
 
 **存储的文件**
 - 在`./Database/Bookinfo.txt`内保存书籍数据 
 - 在`./Database/Users.txt`内保存用户数据
 - 在`./Database/Order.txt`内保存采购和销售数据
 - 在`./Database/Stock.txt`内保存库存数据
+- 在`./Database/Search/Author.txt, Keyword.txt, Name.txt`内保存关键字和拥有该关键字的所有图书的ISBN
 
-其中`Bookinfo.txt`和`Users.txt`因使用块状链表，实际上各自会有`_index.txt`和`_value.txt`两个文件。
+其中`Bookinfo.txt`，`Users.txt`和`./Database/Search/xxx.txt`因使用块状链表，实际上各自会有`_index.txt`和`_value.txt`两个文件。
+
+除此之外，`./Documents`目录下会有由指令生成的文档。
+
+除了生成的文档外，所有数据采用二进制保存。
+
 
 ## 其他补充说明
 **程序的使用方法**:将该系统存储在某个位置，运行`main.exe`启动系统，输入`quit/exit`指令退出系统
