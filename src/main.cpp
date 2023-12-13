@@ -10,9 +10,12 @@ class Number{
 public:
     int num;
     Number(int b=0):num(b){}
-    bool operator <(const Number &other) const{
-        return (*this).num<other.num;
-    }
+    bool operator <(const Number &other) const{ return (*this).num<other.num; }
+    bool operator >(const Number &other) const{ return (*this).num>other.num; }
+    bool operator ==(const Number &other) const{ return (*this).num==other.num; }
+    bool operator <=(const Number &other) const{ return (*this).num<=other.num; }
+    bool operator >=(const Number &other) const{ return (*this).num>=other.num; }
+    bool operator !=(const Number &other) const{ return (*this).num!=other.num; }
 };
 int main(){
     Memory<Number> memory;
