@@ -17,13 +17,13 @@ public:
     bool operator >=(const Number &other) const{ return (*this).num>=other.num; }
     bool operator !=(const Number &other) const{ return (*this).num!=other.num; }
 };
-void debug(std::string str1){
-    std::cout<<str1<<std::endl;
-}
+
+
+
 int main(){
     Memory<Number> memory;
     memory.initialise("test");
-    debug("init_good?");
+    debug("init_done");
     int T,x,y;
     std::string s1,s2;
     std::cin>>T;
@@ -48,7 +48,7 @@ int main(){
                 std::cout<<"null"<<std::endl;
             }
         }
-        debug("One operation");
+//        debug("One operation");
     }
     return 0;
 }

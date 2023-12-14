@@ -17,6 +17,19 @@ using std::ofstream;
 //file_index: 存储链表结构
 //file_value: 存储值
 //file_pool: 可用空间（实现中）
+
+//for dubug only
+template<typename T>
+void debug(T arg){
+//    std::cout << arg << std::endl;
+}
+template<typename T, typename... Args>
+void debug(T arg, Args... args){
+//    std::cout << arg << ", ";
+    debug(args...);
+}
+
+
 template<class T,int info_len = 4>
 class Memory {
 private:
@@ -39,10 +52,6 @@ private:
     using key_value_pair = std::pair<long long, T>;
     using Atom_info = std::pair<long long, int>;
     //Block_id : 0_base
-    template<typename TT>
-    void debug(TT s1){
-        std::cout<<s1<<std::endl;
-    }
 public:
     Memory() = default;
     Memory(const string& FN) : file_name(FN) {}
@@ -129,6 +138,12 @@ public:
             file.write(reinterpret_cast<char *>(&tmp1), sizeofll);
             file.write(reinterpret_cast<char *>(&tmp2), sizeofint);
         }
+        int block_num;
+        file.seekg(0, std::ios::beg);
+        file.read((char*)&block_num, sizeofint);
+        block_num++;
+        file.seekp(0, std::ios::beg);
+        file.write(reinterpret_cast<char *>(&block_num), sizeofint);
 
         file.seekp(cache_ptrp, std::ios::beg);
         file.seekg(cache_ptrg, std::ios::beg);
@@ -338,6 +353,37 @@ public:
         }
         file.close();
     }
+    void delete_Block(int ptr){//**需保证file已处open状态**
+        if (!file.is_open()) throw std::runtime_error("ERR::file not open when delete_Block");
+        int cache_ptrp = file.tellp(), cache_ptrg = file.tellg();
+        //
+        int tmp;
+        Block_Info info = get_Block_Info(ptr);
+        if (info.pre_ptr > 0){
+            file.seekp(info.pre_ptr, std::ios::beg);
+            file.write(reinterpret_cast<char *>(&info.nxt_ptr), sizeofint);
+        }
+        if (info.nxt_ptr > 0){
+            file.seekp(info.nxt_ptr + sizeofint * 2, std::ios::beg);
+            file.write(reinterpret_cast<char *>(&info.pre_ptr), sizeofint);
+        }
+        //更改前后块指针
+        file.seekg(sizeofint * 3, std::ios::beg);
+        file.read((char*)&tmp,sizeofint);
+        file.seekp(sizeofint * 3, std::ios::beg);
+        file.write(reinterpret_cast<char *>(&ptr), sizeofint);
+        file.seekp(ptr, std::ios::beg);
+        file.write(reinterpret_cast<char *>(&tmp), sizeofint);
+        //加入pool
+        file.seekg(0, std::ios::beg);
+        file.read((char*)&tmp,sizeofint);
+        tmp--;
+        file.seekp(0, std::ios::beg);
+        file.write(reinterpret_cast<char *>(&tmp), sizeofint);
+        //更改block总数
+        file.seekp(cache_ptrp, std::ios::beg);
+        file.seekg(cache_ptrg, std::ios::beg);
+    }
 
     void delete_Atom(string str1, T value){
         long long index = get_Hash(str1);
@@ -361,6 +407,9 @@ public:
         }//未找到则直接关文件退出
         values.erase(values.begin() + del_pos);
         //values更新完成
+        if (values.size() == 0){
+            delete_Block(Block_ptr);
+        }//销毁块
 
         override_Block(Block_ptr, values);
         //TODO: 如果和前后块size加起来不到block_size的2/3，则合并块
