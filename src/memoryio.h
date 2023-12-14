@@ -35,7 +35,7 @@ class Memory {
 private:
     fstream file;
     string file_name,file_index,file_pool,file_value;
-    const int block_size = 4;//TODO 改回300
+    const int block_size = 300;//TODO 改回300
     const long long BASE = 131, MOD = 1e9+7;
 //    char index[65];
 
