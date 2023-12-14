@@ -22,7 +22,7 @@ public:
 
 int main(){
     Memory<Number> memory;
-    memory.initialise("test");
+    memory.initialise("test",0);
     int T,x,y;
     std::string s1,s2;
     std::cin>>T;

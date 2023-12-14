@@ -154,14 +154,14 @@ public:
 //        file.seekg(cache_ptrg, std::ios::beg);
     }
 
-    void initialise(string FN = "") {
+    void initialise(string FN = "", int clear_file = 0) {
         if (!FN.empty()) {
             file_name = FN;
         }
         file_index = "./" + file_name + "_index.txt";
         file_value = "./" + file_name + "_value.txt";
 
-        if (check_File_Exists(file_index) && check_File_Exists(file_value)) return; //文件已经存在就无需初始化
+        if (check_File_Exists(file_index) && check_File_Exists(file_value) && (!clear_file)) return; //文件已经存在就无需初始化
 
         int tmpt = 0;
         file.open(file_index, std::ios::out);
@@ -318,12 +318,16 @@ public:
         std::vector <Atom_info> values = get_all_Atom(Block_ptr);
         int value_ptr = new_Value(value);
         int sz = values.size();
-        int pre;
+        int pre,is_same = 0;
         for (pre = 0; pre < sz; pre++)
-            if (values[pre].first > index || (values[pre].first == index) && (get_value(values[pre].second) > value)){
+            if (values[pre].first > index || (values[pre].first == index) && (get_value(values[pre].second) >= value)){
+                if ((values[pre].first == index) && (get_value(values[pre].second) == value)) is_same = 1;
                 break;
             }
-
+        if (is_same){
+            file.close();
+            return;
+        }
         if (pre == sz){
             values.push_back(std::make_pair(index, value_ptr));
         }else{
