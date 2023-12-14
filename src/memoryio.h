@@ -37,7 +37,6 @@ private:
     string file_name,file_index,file_pool,file_value;
     const int block_size = 300;
     const long long BASE = 131, MOD = 1e9+7;
-//    char index[65];
 
     int sizeofT = sizeof(T);
     int sizeofint = sizeof(int), sizeofll = sizeof(long long);
@@ -51,14 +50,10 @@ private:
     };
     using key_value_pair = std::pair<long long, T>;
     using Atom_info = std::pair<long long, int>;
-    //Block_id : 0_base
 public:
     Memory() = default;
     Memory(const string& FN) : file_name(FN) {}
-    /*void to_char(string str1, char (&arr)[65]){
-        strncpy(arr , str1.c_str(), sizeof(arr) - 1);
-        arr[sizeof(arr) - 1] = '\0';
-    }*/
+
     bool check_File_Exists(const std::string& filePath) {
         std::fstream file_tmp(filePath);
         return file_tmp.is_open();
@@ -71,17 +66,17 @@ public:
         Block_Info Info;
         Info.ptr = ptr;
         file.seekg(ptr, std::ios::beg);
-        file.read((char*)&Info.nxt_ptr , sizeofint);
-        file.read((char*)&Info.size , sizeofint);
-        file.read((char*)&Info.pre_ptr , sizeofint);
-        file.read((char*)&Info.id , sizeofint);
+        file.read((char*)&Info.nxt_ptr, sizeofint);
+        file.read((char*)&Info.size, sizeofint);
+        file.read((char*)&Info.pre_ptr, sizeofint);
+        file.read((char*)&Info.id, sizeofint);
         file.read((char*)&Info.index, sizeofll);
         file.read((char*)&Info.value_ptr, sizeofint);
 
         file.seekp(cache_ptrp, std::ios::beg);
         file.seekg(cache_ptrg, std::ios::beg);
         return Info;
-    }//待完善，先别用
+    }
 
     int next_ptr(int ptr){//**需保证file已处open状态**
         if (!file.is_open()) throw std::runtime_error("ERR::file not open when get_Empty_Block");
@@ -166,7 +161,7 @@ public:
         file_index = "./" + file_name + "_index.txt";
         file_value = "./" + file_name + "_value.txt";
 
-//        if (check_File_Exists(file_index) && check_File_Exists(file_value)) return; //文件已经存在就无需初始化
+        if (check_File_Exists(file_index) && check_File_Exists(file_value)) return; //文件已经存在就无需初始化
 
         int tmpt = 0;
         file.open(file_index, std::ios::out);

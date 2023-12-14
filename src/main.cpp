@@ -23,7 +23,6 @@ public:
 int main(){
     Memory<Number> memory;
     memory.initialise("test");
-//    debug("init_done");
     int T,x,y;
     std::string s1,s2;
     std::cin>>T;
@@ -48,7 +47,6 @@ int main(){
                 std::cout<<"null"<<std::endl;
             }
         }
-//        debug("One operation");
     }
     return 0;
 }
