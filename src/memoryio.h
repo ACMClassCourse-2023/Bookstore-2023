@@ -21,11 +21,11 @@ using std::ofstream;
 //for dubug only
 template<typename T>
 void debug(T arg){
-//    std::cout << arg << std::endl;
+    std::cout << arg << std::endl;
 }
 template<typename T, typename... Args>
 void debug(T arg, Args... args){
-//    std::cout << arg << ", ";
+    std::cout << arg << ", ";
     debug(args...);
 }
 
@@ -35,7 +35,7 @@ class Memory {
 private:
     fstream file;
     string file_name,file_index,file_pool,file_value;
-    const int block_size = 300;
+    const int block_size = 4;//TODO 改回300
     const long long BASE = 131, MOD = 1e9+7;
 //    char index[65];
 
@@ -102,7 +102,7 @@ public:
         file.seekg(sizeofint * 3, std::ios::beg);
         int nxt;
         file.read((char*)&nxt, sizeofint);
-        debug("NXt:"); debug(nxt);
+//        debug("NXt:"); debug(nxt);
         if (nxt == 0) {
             file.seekg(0, std::ios::end); //WRONG!!!
             nxt = file.tellg();
@@ -194,7 +194,7 @@ public:
         file.flush();
         //the first block (with two Atoms:index_min and index_max)
         int new_ptr = get_Empty_Block();
-        debug("init_new_ptr:");debug(new_ptr);
+//        debug("init_new_ptr:");debug(new_ptr);
         set_new_Block(new_ptr, 1, 0, 0, 2); //id:1_base
         T v0(0);
         override_Atom(new_ptr + sizeofint * 4, 0, v0);
@@ -218,9 +218,8 @@ public:
 
         key_value_pair ans;
         int value_ptr;
-        long long index;
         file.seekg(ptr, std::ios::beg);
-        file.read((char*)&index, sizeofll);
+        file.read((char*)&ans.first, sizeofll);
         file.read((char*)&value_ptr, sizeofint);
         ans.second = get_value(value_ptr);
 
@@ -253,12 +252,16 @@ public:
         int ptr, ans;
         file.seekg(sizeofint * 2, std::ios::beg);
         file.read((char*)&ptr, sizeofint);
+//        debug("----------");
+//        debug(index,value.num);
         while (ptr > 0){
             key_value_pair Pair = get_key_value_pair(ptr + sizeofint * 4);
+//            debug(Pair.first, Pair.second.num);
             if (Pair.first > index || Pair.first == index && Pair.second > value) break;
             ans = ptr;
             ptr = next_ptr(ptr);
         }
+//        debug("----------");
         file.seekp(cache_ptrp, std::ios::beg);
         file.seekg(cache_ptrg, std::ios::beg);
         return ans;
@@ -389,6 +392,8 @@ public:
         long long index = get_Hash(str1);
         file.open(file_index, std::ios::in | std::ios::out | std::ios::binary);
         int Block_ptr = find_Block(index, value);
+//        debug("Block_ptr", Block_ptr);
+        Block_Info info = get_Block_Info(Block_ptr);
         std::vector <Atom_info> values = get_all_Atom(Block_ptr);
         int sz = values.size();
         int del_pos = -1;
@@ -418,8 +423,6 @@ public:
 
     std::vector<T> search(string str1){
         long long index = get_Hash(str1);
-//        debug("index:"+str1);
-//        debug(index);
         file.open(file_index, std::ios::in | std::ios::out | std::ios::binary);
         int Block_ptr = find_Block(index), sz;
         std::vector <Atom_info> values, ans = {};
