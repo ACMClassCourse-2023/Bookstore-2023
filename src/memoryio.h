@@ -35,7 +35,7 @@ class Memory {
 private:
     fstream file;
     string file_name,file_index,file_pool,file_value;
-    const int block_size = 100;
+    const int block_size = 120;
     const long long BASE = 131, MOD = 1e9+7;
 
     int sizeofT = sizeof(T);
@@ -80,19 +80,19 @@ public:
 
     int next_ptr(int ptr){//**需保证file已处open状态**
         if (!file.is_open()) throw std::runtime_error("ERR::file not open when get_Empty_Block");
-        int cache_ptrp = file.tellp(), cache_ptrg = file.tellg();
+//        int cache_ptrp = file.tellp(), cache_ptrg = file.tellg();
 
         int Nxt;
         file.seekg(ptr, std::ios::beg);
         file.read((char*)&Nxt, sizeofint);
 
-        file.seekp(cache_ptrp, std::ios::beg);
-        file.seekg(cache_ptrg, std::ios::beg);
+//        file.seekp(cache_ptrp, std::ios::beg);
+//        file.seekg(cache_ptrg, std::ios::beg);
         return Nxt;
     }
     int get_Empty_Block(){ //**需保证file已处open状态**
         if (!file.is_open()) throw std::runtime_error("ERR::file not open when get_Empty_Block");
-        int cache_ptrp = file.tellp(), cache_ptrg = file.tellg();
+//        int cache_ptrp = file.tellp(), cache_ptrg = file.tellg();
 
         file.seekg(sizeofint * 3, std::ios::beg);
         int nxt;
@@ -107,8 +107,8 @@ public:
             file.write(reinterpret_cast<char *>(&new_nxt), sizeofint);
         }
 
-        file.seekp(cache_ptrp, std::ios::beg);
-        file.seekg(cache_ptrg, std::ios::beg);
+//        file.seekp(cache_ptrp, std::ios::beg);
+//        file.seekg(cache_ptrg, std::ios::beg);
         return nxt;
     }//返回第一个可用的Empty
 
@@ -121,7 +121,7 @@ public:
 
     void set_new_Block(int ptr, int id, int pre_ptr=0, int nxt_ptr=0, int size = 0){ //**需保证file已处open状态**
         if (!file.is_open()) throw std::runtime_error("ERR::file not open when new_Block");
-        int cache_ptrp = file.tellp(), cache_ptrg = file.tellg();
+//        int cache_ptrp = file.tellp(), cache_ptrg = file.tellg();
 
         file.seekp(ptr, std::ios::beg);
         file.write(reinterpret_cast<char *>(&nxt_ptr), sizeofint);
@@ -140,18 +140,18 @@ public:
         file.seekp(0, std::ios::beg);
         file.write(reinterpret_cast<char *>(&block_num), sizeofint);
 
-        file.seekp(cache_ptrp, std::ios::beg);
-        file.seekg(cache_ptrg, std::ios::beg);
+//        file.seekp(cache_ptrp, std::ios::beg);
+//        file.seekg(cache_ptrg, std::ios::beg);
     }//在ptr位置新建Block的头信息，传入参数：ptr,id,pre_ptr,nxt_ptr,size
 
     void override_Atom(int ptr, long long index, T value){//**需保证file已处open状态**
-        if (!file.is_open()) throw std::runtime_error("ERR::file not open when override_Atom");
-        int cache_ptrp = file.tellp(), cache_ptrg = file.tellg();
+//        if (!file.is_open()) throw std::runtime_error("ERR::file not open when override_Atom");
+//        int cache_ptrp = file.tellp(), cache_ptrg = file.tellg();
         file.seekp(ptr, std::ios::beg);
         file.write(reinterpret_cast<char *>(&index), sizeofll);
         file.write(reinterpret_cast<char *>(&value), sizeofT);
-        file.seekp(cache_ptrp, std::ios::beg);
-        file.seekg(cache_ptrg, std::ios::beg);
+//        file.seekp(cache_ptrp, std::ios::beg);
+//        file.seekg(cache_ptrg, std::ios::beg);
     }
 
     void initialise(string FN = "") {
@@ -208,8 +208,8 @@ public:
     }
 
     key_value_pair get_key_value_pair(int ptr){
-        if (!file.is_open()) throw std::runtime_error("ERR::file not open when get_key_value_pair");
-        int cache_ptrp = file.tellp(), cache_ptrg = file.tellg();
+//        if (!file.is_open()) throw std::runtime_error("ERR::file not open when get_key_value_pair");
+//        int cache_ptrp = file.tellp(), cache_ptrg = file.tellg();
 
         key_value_pair ans;
         int value_ptr;
@@ -218,14 +218,14 @@ public:
         file.read((char*)&value_ptr, sizeofint);
         ans.second = get_value(value_ptr);
 
-        file.seekp(cache_ptrp, std::ios::beg);
-        file.seekg(cache_ptrg, std::ios::beg);
+//        file.seekp(cache_ptrp, std::ios::beg);
+//        file.seekg(cache_ptrg, std::ios::beg);
         return ans;
     }
 
     int find_Block(long long index){//**需保证file已处open状态**
         if (!file.is_open()) throw std::runtime_error("ERR::file not open when find_Block");
-        int cache_ptrp = file.tellp(), cache_ptrg = file.tellg();
+//        int cache_ptrp = file.tellp(), cache_ptrg = file.tellg();
         int ptr, ans;
         file.seekg(sizeofint * 2, std::ios::beg);
         file.read((char*)&ptr, sizeofint);
@@ -237,34 +237,30 @@ public:
             ans = ptr;
             ptr = next_ptr(ptr);
         }
-        file.seekp(cache_ptrp, std::ios::beg);
-        file.seekg(cache_ptrg, std::ios::beg);
+//        file.seekp(cache_ptrp, std::ios::beg);
+//        file.seekg(cache_ptrg, std::ios::beg);
         return ans;
     }//返回其lower_bound（<=该元素的最后一个元素）所在的块的头指针
     int find_Block(long long index, T value){//**需保证file已处open状态**
         if (!file.is_open()) throw std::runtime_error("ERR::file not open when find_Block");
-        int cache_ptrp = file.tellp(), cache_ptrg = file.tellg();
+//        int cache_ptrp = file.tellp(), cache_ptrg = file.tellg();
         int ptr, ans;
         file.seekg(sizeofint * 2, std::ios::beg);
         file.read((char*)&ptr, sizeofint);
-//        debug("----------");
-//        debug(index,value.num);
         while (ptr > 0){
             key_value_pair Pair = get_key_value_pair(ptr + sizeofint * 4);
-//            debug(Pair.first, Pair.second.num);
             if (Pair.first > index || Pair.first == index && Pair.second > value) break;
             ans = ptr;
             ptr = next_ptr(ptr);
         }
-//        debug("----------");
-        file.seekp(cache_ptrp, std::ios::beg);
-        file.seekg(cache_ptrg, std::ios::beg);
+//        file.seekp(cache_ptrp, std::ios::beg);
+//        file.seekg(cache_ptrg, std::ios::beg);
         return ans;
     }//返回其lower_bound（<=该元素的最后一个元素）所在的块的头指针
 
     std::vector<Atom_info> get_all_Atom(int ptr){//**需保证file已处open状态**
         if (!file.is_open()) throw std::runtime_error("ERR::file not open when get_all_Atom");
-        int cache_ptrp = file.tellp(), cache_ptrg = file.tellg();
+//        int cache_ptrp = file.tellp(), cache_ptrg = file.tellg();
 
         int sz,tmp2;
         long long tmp1;
@@ -278,8 +274,8 @@ public:
             ans.push_back(std::make_pair(tmp1, tmp2));
         }
 
-        file.seekp(cache_ptrp, std::ios::beg);
-        file.seekg(cache_ptrg, std::ios::beg);
+//        file.seekp(cache_ptrp, std::ios::beg);
+//        file.seekg(cache_ptrg, std::ios::beg);
         return ans;
     }
 
@@ -294,7 +290,7 @@ public:
 
     void override_Block(int ptr, const std::vector<Atom_info>& values, int nxt_ptr = 0){//**需保证file已处open状态**
         if (!file.is_open()) throw std::runtime_error("ERR::file not open when get_all_Atom");
-        int cache_ptrp = file.tellp(), cache_ptrg = file.tellg();
+//        int cache_ptrp = file.tellp(), cache_ptrg = file.tellg();
 
         int sz = values.size();
         file.seekp(ptr + sizeofint, std::ios::beg);
@@ -311,8 +307,8 @@ public:
             file.write(reinterpret_cast<char *>(&nxt_ptr), sizeofint);
         }//需要修改nxt_ptr
 
-        file.seekp(cache_ptrp, std::ios::beg);
-        file.seekg(cache_ptrg, std::ios::beg);
+//        file.seekp(cache_ptrp, std::ios::beg);
+//        file.seekg(cache_ptrg, std::ios::beg);
     }
 
     void add_Atom(string str1, T value){
@@ -353,7 +349,7 @@ public:
     }
     void delete_Block(int ptr){//**需保证file已处open状态**
         if (!file.is_open()) throw std::runtime_error("ERR::file not open when delete_Block");
-        int cache_ptrp = file.tellp(), cache_ptrg = file.tellg();
+//        int cache_ptrp = file.tellp(), cache_ptrg = file.tellg();
         //
         int tmp;
         Block_Info info = get_Block_Info(ptr);
@@ -379,8 +375,8 @@ public:
         file.seekp(0, std::ios::beg);
         file.write(reinterpret_cast<char *>(&tmp), sizeofint);
         //更改block总数
-        file.seekp(cache_ptrp, std::ios::beg);
-        file.seekg(cache_ptrg, std::ios::beg);
+//        file.seekp(cache_ptrp, std::ios::beg);
+//        file.seekg(cache_ptrg, std::ios::beg);
     }
 
     void delete_Atom(string str1, T value){
