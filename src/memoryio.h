@@ -29,19 +29,19 @@ void debug(T arg, Args... args){
     debug(args...);
 }
 
-
 template<class T,int info_len = 4>
 class Memory {
 private:
     fstream file;
     string file_name,file_index,file_pool,file_value;
-    const int block_size = 120;
+//    const int block_size = 5;
+    const int block_size = 130;
     const long long BASE = 131, MOD = 1e9+7;
 
     int sizeofT = sizeof(T);
     int sizeofint = sizeof(int), sizeofll = sizeof(long long);
     int sizeofHead = sizeofint * info_len;
-    int sizeofAtom = sizeofint + sizeofll;
+    int sizeofAtom = sizeof(Atom_info);
     int sizeofBlock = sizeofint * 4 + sizeofAtom * block_size;
     int Block_cnt = 1;
     struct Block_Info{
@@ -97,7 +97,6 @@ public:
         file.seekg(sizeofint * 3, std::ios::beg);
         int nxt;
         file.read((char*)&nxt, sizeofint);
-//        debug("NXt:"); debug(nxt);
         if (nxt == 0) {
             file.seekg(0, std::ios::end); //WRONG!!!
             nxt = file.tellg();
@@ -128,11 +127,16 @@ public:
         file.write(reinterpret_cast<char *>(&size), sizeofint);
         file.write(reinterpret_cast<char *>(&pre_ptr), sizeofint);
         file.write(reinterpret_cast<char *>(&id), sizeofint);
+        Atom_info arr[block_size];
+        memset(arr, 0, sizeof(arr));
+        file.write(reinterpret_cast<char *>(&arr), sizeof(arr));
+        /*
         long long tmp1 = 0; int tmp2 = 0;
         for (int i = 0; i < block_size; i++){
             file.write(reinterpret_cast<char *>(&tmp1), sizeofll);
             file.write(reinterpret_cast<char *>(&tmp2), sizeofint);
         }
+         */
         int block_num;
         file.seekg(0, std::ios::beg);
         file.read((char*)&block_num, sizeofint);
@@ -144,8 +148,9 @@ public:
 //        file.seekg(cache_ptrg, std::ios::beg);
     }//在ptr位置新建Block的头信息，传入参数：ptr,id,pre_ptr,nxt_ptr,size
 
+    /*
     void override_Atom(int ptr, long long index, T value){//**需保证file已处open状态**
-//        if (!file.is_open()) throw std::runtime_error("ERR::file not open when override_Atom");
+        if (!file.is_open()) throw std::runtime_error("ERR::file not open when override_Atom");
 //        int cache_ptrp = file.tellp(), cache_ptrg = file.tellg();
         file.seekp(ptr, std::ios::beg);
         file.write(reinterpret_cast<char *>(&index), sizeofll);
@@ -153,7 +158,20 @@ public:
 //        file.seekp(cache_ptrp, std::ios::beg);
 //        file.seekg(cache_ptrg, std::ios::beg);
     }
+    */
 
+    void initialise_file(){
+        int tmpt = 0;
+        file.open(file_index, std::ios::out);
+        for (int i = 0; i < info_len; i++)
+            file.write(reinterpret_cast<char *>(&tmpt), sizeofint);
+        file.close();
+
+        file.open(file_value, std::ios::out);
+        for (int i = 0; i < 1; i++)
+            file.write(reinterpret_cast<char *>(&tmpt), sizeofint);
+        file.close();
+    }
     void initialise(string FN = "", int clear_file = 0) {
         if (!FN.empty()) {
             file_name = FN;
@@ -163,15 +181,7 @@ public:
 
         if (check_File_Exists(file_index) && check_File_Exists(file_value) && (!clear_file)) return; //文件已经存在就无需初始化
 
-        int tmpt = 0;
-        file.open(file_index, std::ios::out);
-        for (int i = 0; i < info_len; i++)
-            file.write(reinterpret_cast<char *>(&tmpt), sizeofint);
-        file.close();
-        file.open(file_value, std::ios::out);
-        for (int i = 0; i < 1; i++)
-            file.write(reinterpret_cast<char *>(&tmpt), sizeofint);
-        file.close();
+        initialise_file();
 
         file.open(file_index, std::ios::in | std::ios::out | std::ios::binary);
         if (!file.is_open()){
@@ -189,12 +199,11 @@ public:
         file.flush();
         //the first block (with two Atoms:index_min and index_max)
         int new_ptr = get_Empty_Block();
-//        debug("init_new_ptr:");debug(new_ptr);
         set_new_Block(new_ptr, 1, 0, 0, 2); //id:1_base
         T v0(0);
-        override_Atom(new_ptr + sizeofint * 4, 0, v0);
-        override_Atom(new_ptr + sizeofint * 4 + sizeofAtom, MOD, v0);
-
+        int ptr1 = new_Value(v0), ptr2 = new_Value(v0);
+        std::vector<Atom_info> init_arr ={std::make_pair(0, ptr1), std::make_pair(MOD, ptr2)};
+        override_Block(new_ptr, init_arr, 0);
         file.close();
     }
 
@@ -264,15 +273,20 @@ public:
 
         int sz,tmp2;
         long long tmp1;
-        std::vector <Atom_info> ans = {};
         file.seekg(ptr + sizeofint, std::ios::beg);
         file.read((char*)&sz, sizeofint);
         file.seekg(ptr + sizeofint * 4, std::ios::beg);
+        Atom_info arr[sz];
+        file.read((char*)&arr, sizeof(arr));
+        std::vector<Atom_info> ans(arr, arr + sz);
+        /*
+        std::vector <Atom_info> ans = {};
         for (int i = 0; i <  sz; i++){
             file.read((char*)&tmp1, sizeofll);
             file.read((char*)&tmp2, sizeofint);
             ans.push_back(std::make_pair(tmp1, tmp2));
         }
+        */
 
 //        file.seekp(cache_ptrp, std::ios::beg);
 //        file.seekg(cache_ptrg, std::ios::beg);
@@ -289,19 +303,22 @@ public:
     }
 
     void override_Block(int ptr, const std::vector<Atom_info>& values, int nxt_ptr = 0){//**需保证file已处open状态**
-        if (!file.is_open()) throw std::runtime_error("ERR::file not open when get_all_Atom");
+        if (!file.is_open()) throw std::runtime_error("ERR::file not open when override_Block");
 //        int cache_ptrp = file.tellp(), cache_ptrg = file.tellg();
 
         int sz = values.size();
         file.seekp(ptr + sizeofint, std::ios::beg);
         file.write(reinterpret_cast<char *>(&sz), sizeofint);
         file.seekp(ptr + sizeofint * 4, std::ios::beg);
-        long long tmp1; int tmp2;
+        Atom_info arr[sz];
+        std::copy(values.begin(), values.end(), arr);
+        file.write(reinterpret_cast<char *>(&arr), sizeof(arr));
+        /*long long tmp1; int tmp2;
         for (int i = 0; i < sz ; i++){
             tmp1 = values[i].first; tmp2 = values[i].second;
             file.write(reinterpret_cast<char *>(&tmp1), sizeofll);
             file.write(reinterpret_cast<char *>(&tmp2), sizeofint);
-        }
+        }*/
         if (nxt_ptr != 0){
             file.seekp(ptr, std::ios::beg);
             file.write(reinterpret_cast<char *>(&nxt_ptr), sizeofint);
@@ -316,6 +333,7 @@ public:
         file.open(file_index, std::ios::in | std::ios::out | std::ios::binary);
         int Block_ptr = find_Block(index, value);
         std::vector <Atom_info> values = get_all_Atom(Block_ptr);
+//        debug("values:");for (auto i:values){debug(i.first, i.second);}debug("values_end.");
         int value_ptr = new_Value(value);
         int sz = values.size();
         int pre,is_same = 0;
@@ -427,7 +445,6 @@ public:
             values = get_all_Atom(Block_ptr);
             sz = values.size();
             for (int i = 0; i < sz; i++){
-//                debug(values[i].first);
                 if (values[i].first == index) ans.push_back(values[i]);
                 if (values[i].first > index) {
                     flag = 1;
@@ -444,6 +461,19 @@ public:
         return ans_T;
     }
 
+    //for debug only
+    void print_all(){
+        file.open(file_index, std::ios::in | std::ios::out | std::ios::binary);
+        int tmp;long long tmp2;int tnum;
+        file.seekg(0, std::ios::beg);
+        for (int i = 0; i < 4; i++){
+            file.read((char*)&tmp,sizeofint);std::cout<<tmp<<' ';std::cout<<std::endl;
+        }
+        std::cout<<std::endl;
+        for (int i = 0; i < 4; i++){
+            file.read((char*)&tmp,sizeofint);std::cout<<tmp<<' ';std::cout<<std::endl;
+        }
+    }
 };
 
 #endif //BOOKSTORE_2023_MEMORYIO_H
