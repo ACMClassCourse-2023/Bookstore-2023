@@ -10,4 +10,5 @@ include_directories(src)
 
 add_executable(code
         src/memoryio.h
-        src/main.cpp)
+        src/main.cpp
+        src/memoryio.cpp)
